@@ -1,0 +1,52 @@
+services:
+  # Development Environment Service
+  fastapi-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: fastapi_hostel_backend_dev_img
+    container_name: fastapi_hostel_backend_dev_container
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - postgres-dev
+    volumes:
+      - ./backend/app:/backend/app
+    env_file:
+      - ./backend/.env
+
+  # PostgreSQL for Development
+  postgres-dev:
+    image: postgres:17.2
+    container_name: postgres_dev_container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+
+  # Next.js Development Service
+  nextjs-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: fastapi_hostel_frontend_dev_img
+    container_name: fastapi_hostel_frontend_dev_container
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/frontend
+    depends_on:
+      - fastapi-dev
+
+# Volumes to persist PostgreSQL data
+volumes:
+  postgres_data_dev:
